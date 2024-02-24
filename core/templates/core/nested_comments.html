@@ -1,0 +1,56 @@
+<div class="mb-8 ml-10 border-l-2 border-gray-500 pl-4">
+    <div class="comment bg-gray-800 p-4 rounded-lg mb-4" id="{{ comment.id }}">
+        <p class="mb-3"><span class="font-semibold text-yellow-500">{{ comment.user }}</span> {{ comment.text }}</p>
+        {% if not reply_form_visible %}
+            <button class="text-blue-500 hover:underline" data-reply-button="replyBtn-{{ comment.id }}" onclick="toggleReplyForm({{ comment.id }})">Reply</button>
+        {% endif %}
+        <button class="text-gray-500 hover:underline{% if not reply_form_visible %} hidden{% endif %}" data-cancel-button="cancelBtn-{{ comment.id }}" onclick="cancelReply({{ comment.id }})">Cancel</button>
+
+        <form class="mt-2 hidden" id="reply-form-{{ comment.id }}" method="POST" action="/reply">
+            {% csrf_token %}
+            <div class="flex items-center space-x-4">
+                <input type="hidden" name="story" value="{{ story.slug }}" />
+                <input type="hidden" name="parent" value="{{ comment.id }}" />
+                {{ reply_form.text }}
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Reply</button>
+            </div>
+        </form>
+
+        {% if comment.get_child_comments.count > 0 %}
+            <div class="nested-comments mt-4 pl-4 border-l-2 border-gray-500">
+                {% for child_comment in comment.get_child_comments %}
+                    <div class="comment bg-gray-800 p-4 rounded-lg mb-4" id="{{ child_comment.id }}">
+                        <p class="mb-3"><span class="font-semibold text-yellow-500">{{ child_comment.user }}</span> {{ child_comment.text }}</p>
+                        {% if not reply_form_visible %}
+                            {%if request.user.is_authenticated%}
+                            <button class="text-blue-500 hover:underline" data-reply-button="replyBtn-{{ child_comment.id }}" onclick="toggleReplyForm({{ child_comment.id }})">Reply</button>
+                            {%else%}
+                            <a class="text-blue-500 hover:underline" href = "/login?story={{story.slug}}">Reply</a>
+                            {%endif%}
+
+                        {% endif %}
+                        <button class="text-gray-500 hover:underline{% if not reply_form_visible %} hidden{% endif %}" data-cancel-button="cancelBtn-{{ child_comment.id }}" onclick="cancelReply({{ child_comment.id }})">Cancel</button>
+
+                        <form class="mt-2 hidden" id="reply-form-{{ child_comment.id }}" method="POST" action="/reply">
+                            {% csrf_token %}
+                            <div class="flex items-center space-x-4">
+                                <input type="hidden" name="story" value="{{ story.slug }}" />
+                                <input type="hidden" name="parent" value="{{ child_comment.id }}" />
+                                {{ reply_form.text }}
+                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Reply</button>
+                            </div>
+                        </form>
+
+                        {% if child_comment.get_child_comments.count > 0 %}
+                            <div class="nested-comments mt-4 pl-4 border-l-2 border-gray-500">
+                                {% for nested_comment in child_comment.get_child_comments %}
+                                    <p class="mb-3"><span class="font-semibold text-yellow-500">{{ nested_comment.user }}</span> {{ nested_comment.text }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>

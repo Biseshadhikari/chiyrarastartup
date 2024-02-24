@@ -1,0 +1,169 @@
+{%extends 'base.html'%}
+
+{%block content%}
+<style>
+    input[type="text"] {
+        margin-top: 1rem;
+        padding: 0.5rem;
+        display: block;
+        width: 100%;
+        border: 1px solid #4a5568; /* Replace with the desired color or use border-gray-300 */
+        border-radius: 0.375rem; /* Equivalent to rounded-md */
+        background-color: #2d3748; /* Equivalent to bg-gray-800 */
+        outline: none;
+        color: #fff; 
+   }
+
+   input[type="text"]:focus {
+        border-color: #f6e05e; /* Equivalent to focus:border-yellow-500 */
+
+   }
+
+
+
+</style>
+<section class="container mx-auto mt-20 p-4 lg:flex lg:items-start">
+
+    <!-- Main Content -->
+    <div class="lg:w-3/4 lg:pr-8">
+        <h1 class="text-4xl font-bold mb-4">{{story.title}}</h1>
+        <p class="text-gray-500 mb-6">Published on <span class="font-semibold">{{story.created}}</span> by <span
+                class="text-yellow-500">{{story.author}}</span></p>
+        <img src="{{story.thumbnail.url}}" alt="News Thumbnail"
+            class="w-full max-h-96 object-cover mb-6 rounded-lg">
+
+        <p class="mb-6 leading-7">{{story.body|safe}}</p>
+
+        <!-- Nested Comment Section -->
+        <div class="comment-section mb-8 ">
+            <h2 class="text-2xl font-bold  mt-20 mb-10">Comments</h2>
+
+            <!-- Comment 1 -->
+            {% for comment in comments %}
+              {% include 'core/nested_comments.html' with comments=comment %}
+            {% endfor %}
+            
+        
+
+            <!-- Add more comments as needed -->
+
+            <!-- Add Comment Form -->
+            <form class="comment-form mt-6" method = "post">
+                {%csrf_token%}
+                <h3 class="text-xl font-semibold mb-4">Leave a Comment</h3>
+
+                <!-- Modern Comment Input Field -->
+                <div class="mb-4">
+                    {{comment_form.text}}
+                </div>
+
+                <!-- Submit Button -->
+                {%if request.user.is_authenticated%}
+                <button type="submit"
+                    class="bg-yellow-500 text-gray-900 py-2 px-4 rounded-md hover:bg-yellow-400 focus:outline-none focus:border-yellow-700 focus:ring focus:ring-yellow-200">
+                    Post Comment
+                </button>
+                {%else%}
+                <a id = "openModalBtn"
+                    class="bg-yellow-500 cursor-pointer text-gray-900 py-2 px-4 rounded-md hover:bg-yellow-400 focus:outline-none focus:border-yellow-700 focus:ring focus:ring-yellow-200">
+                    Post Comment
+                </a>
+                {%endif%}
+            </form>
+        </div>
+        <!-- End Comment Section -->
+    </div>
+
+    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        
+        <div class="bg-white p-6 rounded shadow-md w-1/2">
+            <h1 class="text-gray-900 text-2xl font-bold text-center">You need to be logged in to comment</h1>
+            <div class="w-full flex items-center justify-center my-4 gap-3">
+                <a href="{%url 'login'%}?story={{story.slug}}" class="p-3 bg-green-500 rounded-xl text-white">Login</a>
+                <a href="{%url 'register'%}?story={{story.slug}}" class="p-3 bg-blue-500 rounded-xl text-white">Signup</a>
+            </div>
+            <button id="closeModalBtn" class="mt-4 bg-red-500 text-white py-2 px-4 rounded">Close</button>
+        </div>
+    </div>
+</div>
+
+    <!-- Related News Sidebar -->
+    <aside class="lg:w-1/4 bg-gray-800 mt-5 md:mt-20 p-4 rounded-lg" style = "margin-top: 100px;">
+        <h2 class="text-xl font-bold mb-4">Related Story</h2>
+
+        <!-- Related News 1 -->
+        {%if related_stories%}
+            {%for story in related_stories%}
+            <a href = "{%url 'storyDetail' story.slug%}"class="related-news mb-4 flex">
+                <img src="{{story.thumbnail.url}}" alt="Related News Thumbnail"
+                    class="w-1/3 max-h-32 object-cover mb-2 rounded-lg mr-4" style="width: 100px; height: 80pxz;">
+                <div class="w-2/3">
+                    <h3 class="text-lg font-semibold">{{story.title}}</h3>
+                </div>
+            </a>
+            {%endfor%}
+        {%else%}
+            <h1>No Related Stories</h1>
+        {%endif%}
+        
+ 
+    </aside>
+    
+
+</section>
+
+
+<script>
+     function toggleReplyForm(commentId) {
+    const replyButton = document.querySelector(`[data-reply-button="replyBtn-${commentId}"]`);
+    const cancelButton = document.querySelector(`[data-cancel-button="cancelBtn-${commentId}"]`);
+    const replyForm = document.getElementById(`reply-form-${commentId}`);
+
+    replyButton.classList.add('hidden');
+    cancelButton.classList.remove('hidden');
+    replyForm.classList.remove('hidden');
+  }
+
+  function cancelReply(commentId) {
+    const replyButton = document.querySelector(`[data-reply-button="replyBtn-${commentId}"]`);
+    const cancelButton = document.querySelector(`[data-cancel-button="cancelBtn-${commentId}"]`);
+    const replyForm = document.getElementById(`reply-form-${commentId}`);
+
+    replyButton.classList.remove('hidden');
+    cancelButton.classList.add('hidden');
+    replyForm.classList.add('hidden');
+  }
+  
+document.addEventListener('DOMContentLoaded', function () {
+    const openModalBtn = document.getElementById('openModalBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modal = document.getElementById('modal');
+
+    // Function to open the modal
+    function openModal() {
+        modal.classList.remove('hidden');
+    }
+
+    // Function to close the modal
+    function closeModal() {
+        modal.classList.add('hidden');
+    }
+
+    // Event listeners
+    openModalBtn.addEventListener('click', function () {
+        openModal();
+    });
+
+    closeModalBtn.addEventListener('click', function () {
+        closeModal();
+    });
+
+    // Close the modal if the user clicks outside of it
+    window.addEventListener('click', function (event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+});
+</script>
+{%endblock content%}
