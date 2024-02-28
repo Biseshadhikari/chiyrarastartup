@@ -14,10 +14,12 @@ def home(request):
     category_ = Category.objects.filter(text = category).first()
     if category_: 
         stories = Story.objects.filter(category = category_)
+    events = Event.objects.all()
     context = { 
         'stories':stories,
         'categories':categories,
-        'category_text':category
+        'category_text':category,
+        'events':events
     }
     return render(request,'core/index.html',context)
 
@@ -182,3 +184,51 @@ def user_logout(request):
 
 def aboutUs(request):
     return render(request,'core/aboutus.html')
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Event, EventRegistration
+
+def eventRegister(request, event_pk):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        contact = request.POST.get('contact')
+        address = request.POST.get('address')
+        institution = request.POST.get('institution')
+
+        # Additional validation
+        if not name or not email  or not address:
+            messages.error(request, 'All fields are required except for institution.')
+            return redirect(f'/eventRegister/{event_pk}')
+
+        # You can add more specific validation based on your requirements
+
+        event_ = Event.objects.filter(pk=event_pk).first()
+
+        event_register = EventRegistration(
+            name=name,
+            email=email,
+            contact=contact,
+            address=address,
+            institution=institution,
+            event=event_
+        )
+        event_register.save()
+
+        messages.success(request, 'Registration Successful')
+        return redirect(f'/eventRegister/{event_pk}')
+
+    return render(request, 'core/eventRegister.html')
+
+
+
+
+
+
+
+def event_details(request,pk):
+    event = Event.objects.filter(pk =pk).first()
+    return render(request,'core/eventDetail.html',{'event':event})

@@ -40,3 +40,30 @@ class Comment(models.Model):
     
     def get_child_comments(self): 
         return Comment.objects.filter(parent_comment = self)
+
+
+class Event(models.Model):
+    title = models.CharField(max_length=255)
+    img = models.ImageField(upload_to='even/img',null = True, blank = True)
+    date = models.DateField()
+    time = models.TimeField()
+    description = models.TextField()
+    is_past_event = models.BooleanField(default=False)
+    map_iframe = models.CharField(max_length=400,blank=True,null=True)
+
+
+    def __str__(self):
+        return self.title
+    
+
+class EventRegistration(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15)
+    contact = models.CharField(max_length=15)
+    address = models.TextField()
+    institution = models.CharField(max_length=255,null = True)
+    event = models.ForeignKey(Event,on_delete = models.CASCADE)
+
+    def __str__(self):
+        return self.name

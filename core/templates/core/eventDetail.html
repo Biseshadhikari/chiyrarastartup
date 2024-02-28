@@ -1,0 +1,41 @@
+<!-- events/templates/events/event_detail.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="my-12">
+    <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 text-center">Event Details</h2>
+
+        <!-- Event Details Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Left Column: Event Information -->
+            <div>
+                <!-- Event Thumbnail -->
+                <img src="{{ event.img.url }}" alt="{{ event.title }}" class="w-full h-60 md:h-80 object-cover rounded-lg mb-4">
+
+                <h3 class="text-xl md:text-2xl font-bold mb-4">{{ event.title }}</h3>
+                <p class="mb-4 text-gray-500 dark:text-gray-300">
+                    <strong>Date:</strong> {{ event.date }} <br>
+                    <strong>Time:</strong> {{ event.time }} <br>
+                    <strong>Description:</strong> {{ event.description }}
+                </p>
+
+                <!-- Register for Event Button -->
+                <a href="{% url 'eventRegister' event.pk %}" class="inline-block px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600">
+                    Register for Event
+                </a>
+            </div>
+
+            <!-- Right Column: Embedded Map -->
+            <div class="md:mt-10">
+                <div class="text-center font-bold text-xl mb-4">Location Map</div>
+                <!-- Smaller and responsive map iframe -->
+                <div class="w-full md:w-full mx-auto overflow-hidden">
+                    {{ event.map_iframe|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

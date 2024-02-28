@@ -8,6 +8,9 @@ urlpatterns = [
     path('reply', replyPage, name='reply'),
     path('logout/', user_logout, name='logout'),
     path('aboutus/', aboutUs, name='aboutus'),
+    path('eventRegister/<int:event_pk>/',eventRegister,name ="eventRegister"),
+    path('event/<int:pk>',event_details,name ="eventDetail")
+
 
 
 ]
